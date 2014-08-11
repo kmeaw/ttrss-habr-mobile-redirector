@@ -1,14 +1,14 @@
 <?php
 
-class HabrMobileRedirector extends Plugin implements IHandler
+class Ttrss_Habr_Mobile_Redirector extends Plugin
 {
   private $host;
   function about() {
     return array(
-      0.1,
+      0.2,
       'Replace links to habr to mobile if opened in mobile browser',
       'kmeaw',
-      false // is_system
+      true
     );
   }
 
@@ -18,17 +18,13 @@ class HabrMobileRedirector extends Plugin implements IHandler
 
   function init($host) {
     $this->host = $host;
-    $host->add_hook($host::HOOK_RENDER_ARTICLE, $this);
+    $host->add_hook($host::HOOK_QUERY_HEADLINES, $this);
   }
 
-  function hook_render_article($article) {
-    if (strpos($article['link'], "http://habrahabr.ru") === false)
-      return $article;
-    if (strpos($article['plugin_data'], "habrmobileredirectormod,$owner_uid:" . $article['plugin_data']) !== false)
-      return $article;
-    $article['content'] = str_replace('http://habrahabr.ru', 'http://m.habrahabr.ru', $article['content']);
-    $article['content'] = print_r($_SERVER, true);
-    $article['plugin_data'] = "habrmobileredirectormod,$owner_uid:" . $article['plugin_data'];
-    return $article;
+  function hook_query_headlines($headline, $b, $is_api) {
+    if (!$is_api)
+      return $headline;
+    $headline['link'] = str_replace('http://habrahabr.ru', 'http://m.habrahabr.ru', $headline['link']);
+    return $headline;
   }
 }
